@@ -1,0 +1,62 @@
+- name: Download Dependencies For PHP7.0-7.3
+  yum:
+    name: "{{ PHP_dependencies }}"
+    state: present
+  vars:
+    PHP_dependencies:
+    - gcc
+    - gcc-c++
+    - make
+    - openssl
+    - openssl-devel
+    - libxml2
+    - libxml2-devel
+    - curl
+    - libcurl-devel
+    - libjpeg-turbo-devel
+    - libjpeg-turbo
+    - libpng
+    - libpng-devel
+    - freetype
+    - freetype-devel
+  when: (php_ver is match '7.0.*') or (php_ver is match '7.1.*') or (php_ver is match '7.2.*') or (php_ver is match '7.3.*')
+- include_tasks: dependencies_php7.yaml
+  when: php_ver is match '7.4.*'
+- name: Download PHP Package
+  get_url:
+    url: "http://192.168.1.40/Packages/PHP7/php-{{ php_ver }}.tar.gz"
+    dest: /tmp/
+- name: Unzip And Untar Source Package
+  unarchive:
+    src: "/tmp/php-{{ php_ver }}.tar.gz"
+    dest: /tmp/
+    remote_src: yes
+- name: Pre-compile PHP Source Using Script (configure)
+  shell: "cd /tmp/php-{{ php_ver }};./configure --prefix={{ php_install_dir }} {{ php_argument }}"
+- name: Compile PHP Source (make)
+  make:
+    chdir: "/tmp/php-{{ php_ver }}"
+- name: Install PHP (make install)
+  make:
+    chdir: "/tmp/php-{{ php_ver }}"
+    target: install
+- name: Copy New php-fpm.conf & 
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    remote_src: yes
+  with_items:
+    - { src: "{{ php_install_dir }}etc/php-fpm.conf.default", dest: "{{ php_install_dir }}etc/php-fpm.conf" }
+    - { src: "{{ php_install_dir }}etc/php-fpm.d/www.conf.default", dest: "{{ php_install_dir }}etc/php-fpm.d/www.conf" }
+- name: Create Systemd File
+  template: 
+    src: ./php_service.j2
+    dest: /usr/lib/systemd/system/php-fpm.service
+- name: Reload Daemon
+  systemd:
+    daemon_reload: yes
+- name: Enable And Start Service
+  systemd:
+    name: php-fpm
+    state: started
+    enabled: true

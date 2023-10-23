@@ -1,0 +1,12 @@
+mysql_ver: 5.7.30
+mysql_install_dir: /usr/local/mysql/
+mysql_data_dir: /data/mysql-data/
+mysql_log_dir: /var/log/mysql/
+mysql_socket_dir: /tmp/
+
+nginx_ver: 1.24.0
+nginx_install_dir: /usr/local/nginx/
+
+php_ver: 7.2.34
+php_install_dir: /usr/local/php/
+php_argument: --with-mysqli --with-pdo-mysql --with-iconv-dir --with-freetype-dir --with-jpeg-dir --with-png-dir --with-zlib --with-libxml-dir --enable-simplexml --enable-xml --disable-rpath --enable-bcmath --enable-soap --enable-zip --with-curl --enable-fpm --with-fpm-user=nobody --with-fpm-group=nobody --enable-mbstring --enable-sockets --with-gd --with-openssl --with-mhash --enable-opcache --disable-fileinfo

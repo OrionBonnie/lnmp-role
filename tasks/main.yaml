@@ -1,0 +1,3 @@
+#- include_tasks: mysql.yaml
+#- include_tasks: nginx.yaml
+- include_tasks: php.yaml

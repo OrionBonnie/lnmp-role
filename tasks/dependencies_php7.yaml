@@ -1,0 +1,43 @@
+- name: Download Dependencies For PHP7.4
+  yum:
+    name: "{{ PHP_dependencies }}"
+    state: present
+  vars:
+    PHP_dependencies:
+    - gcc
+    - gcc-c++
+    - make
+    - openssl
+    - openssl-devel
+    - libxml2
+    - libxml2-devel
+    - curl
+    - libcurl-devel
+    - libjpeg-turbo-devel
+    - libjpeg-turbo
+    - libpng
+    - libpng-devel
+    - freetype
+    - freetype-devel
+    - sqlite
+    - sqlite-devel
+- name: Download Extra Dependency For PHP7.4
+  get_url:
+    url: http://192.168.1.40/Packages/PHP7/Dependency/onig-6.9.9.tar.gz
+    dest: /tmp/
+- name: Untar Dependency Package
+  unarchive:
+    src: /tmp/onig-6.9.9.tar.gz
+    dest: /tmp/
+    remote_src: yes
+- name: Pre-compile Dependency Source
+  shell: "cd /tmp/onig-6.9.9;./configure --prefix=/usr --libdir=/lib64"
+- name: Compile Dependency Source
+  make:
+    chdir: /tmp/onig-6.9.9
+    params:
+      NUM_THREADS: "{{ ansible_processor_vcpus }}"
+- name: Install The Extra Dependency
+  make:
+    chdir: /tmp/onig-6.9.9
+    target: install

@@ -1,0 +1,68 @@
+- name: Download Dependencies For Mysql
+  yum:
+    name: "{{ mysql_dependencies }}"
+    state: present
+  vars:
+    mysql_dependencies:
+    - gcc-c++
+    - ncurses-devel
+    - cmake
+    - openssl-devel
+- name: Download Mysql Package
+  get_url:
+    url: "http://192.168.1.40/Packages/Database/Relational/MySQL/mysql-boost-{{ mysql_ver }}.tar.gz"
+    dest: /tmp/
+- name: Add User For Mysql
+  user:
+    state: present
+    name: mysql
+    uid: 2000
+    shell: /sbin/nologin
+    create_home: false
+- name: Create Data & Log Directory
+  file:
+    state: directory
+    path: "{{ item }}"
+    owner: mysql
+    group: mysql
+  with_items:
+    - "{{ mysql_data_dir }}"
+    - "{{ mysql_log_dir }}"
+- name: Unzip And Untar Mysql Source
+  unarchive:
+    src: "/tmp/mysql-boost-{{ mysql_ver }}.tar.gz"
+    dest: /tmp/
+    remote_src: yes
+- name: Move C Boost To /usr/local
+  command: "mv /tmp/mysql-{{ mysql_ver }}/boost /usr/local"
+- name: Pre-compile Mysql Source Using Script (Configure)
+  script: "./mysql_config.sh {{ mysql_install_dir }} {{ mysql_data_dir }} {{ mysql_ver }}"
+- name: Compile Mysql (Make)
+  make:
+    chdir: "/tmp/mysql-{{ mysql_ver }}"
+- name: Install Mysql (Make Install)
+  make:
+    chdir: "/tmp/mysql-{{ mysql_ver }}"
+    target: install
+- name: Initialize Mysql Using Script
+  script: "./init_mysql.sh {{ mysql_install_dir }} {{ mysql_data_dir }}"
+- name: Copy Service File
+  copy:
+    src: "{{ mysql_install_dir }}support-files/mysql.server"
+    dest: /etc/init.d/mysqld
+    mode: 0755
+    remote_src: yes
+- name: Add Service
+  shell: "chkconfig --add mysqld"
+- name: Modified Config File
+  template:
+    src: ./mysql_config.j2
+    dest: /etc/my.cnf
+  notify:
+    - Mysql Config Changed
+- name: Enable And Start Service
+  systemd:
+    name: mysqld
+    state: started
+    enabled: true
+

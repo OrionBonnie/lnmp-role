@@ -1,0 +1,12 @@
+[mysqld]
+user=mysql
+basedir={{ mysql_install_dir }}
+datadir={{ mysql_data_dir }}
+server_id=6
+log-error={{ mysql_log_dir }}error.log
+pid-file={{ mysql_data_dir }}mysql.pid
+port=3306
+socket={{ mysql_socket_dir }}mysql.sock
+[mysql]
+socket={{ mysql_socket_dir }}mysql.sock
+

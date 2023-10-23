@@ -1,0 +1,13 @@
+[Unit]
+Description=PHP-FPM
+After=network.target
+
+[Service]
+Type=forking
+ExecStart={{ php_install_dir }}sbin/php-fpm --daemonize --pid {{ php_install_dir }}php.pid
+ExecRestart=/usr/bin/kill -9 $MAINPID && /usr/bin/sleep 1s && {{ php_install_dir }}sbin/php-fpm --daemonize --pid {{ php_install_dir }}php.pid
+ExecStop=/usr/bin/kill -9 `/usr/bin/cat {{ php_install_dir }}php.pid`
+
+[Install]
+WantedBy=multi-user.target
+

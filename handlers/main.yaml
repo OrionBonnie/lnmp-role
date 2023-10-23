@@ -1,0 +1,8 @@
+- name: Mysql Config Changed
+  systemd:
+    name: mysqld
+    state: restarted
+- name: Nginx Config Changed
+  systemd:
+    name: nginx
+    state: reloaded
